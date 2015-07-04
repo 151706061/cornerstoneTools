@@ -1,4 +1,4 @@
-/*! cornerstoneTools - v0.6.2 - 2015-07-10 | (c) 2014 Chris Hafey | https://github.com/chafey/cornerstoneTools */
+/*! cornerstoneTools - v0.6.2 - 2015-07-13 | (c) 2014 Chris Hafey | https://github.com/chafey/cornerstoneTools */
 // Begin Source: src/inputSources/mouseWheelInput.js
 var cornerstoneTools = (function ($, cornerstone, cornerstoneTools) {
 
@@ -5047,22 +5047,26 @@ var cornerstoneTools = (function ($, cornerstone, cornerstoneTools) {
 
     "use strict";
 
-    if(cornerstoneTools === undefined) {
+    if (cornerstoneTools === undefined) {
         cornerstoneTools = {};
     }
 
-    function mouseUpCallback(e, eventData)
-    {
+    function mouseUpCallback(e, eventData) {
         $(eventData.element).off("CornerstoneToolsMouseDrag", mouseDragCallback);
         $(eventData.element).off("CornerstoneToolsMouseUp", mouseUpCallback);
     }
 
-    function mouseDownCallback(e, eventData)
-    {
-        if(cornerstoneTools.isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
-            $(eventData.element).on("CornerstoneToolsMouseDrag", mouseDragCallback);
+    function mouseDownCallback(e, eventData) {
+        if (cornerstoneTools.isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
+            var config = cornerstoneTools.wwwc.getConfiguration();
+            if (config.throttleLimit && config.throttleLimit > 0) {
+                var throttleLimit = config.throttleLimit;
+                $(eventData.element).on("CornerstoneToolsMouseDrag", cornerstoneTools.throttle(mouseDragCallback, throttleLimit));
+            } else {
+                $(eventData.element).on("CornerstoneToolsMouseDrag", mouseDragCallback);
+            }
             $(eventData.element).on("CornerstoneToolsMouseUp", mouseUpCallback);
-            return false; // false = cases jquery to preventDefault() and stopPropagation() this event
+            return false; // false = causes jquery to preventDefault() and stopPropagation() this event
         }
     }
 
@@ -5081,15 +5085,13 @@ var cornerstoneTools = (function ($, cornerstone, cornerstoneTools) {
         eventData.viewport.voi.windowCenter += (deltaY);
     }
 
-    function mouseDragCallback(e, eventData)
-    {
+    function mouseDragCallback(e, eventData) {
         cornerstoneTools.wwwc.strategy(eventData);
         cornerstone.setViewport(eventData.element, eventData.viewport);
-        return false; // false = cases jquery to preventDefault() and stopPropagation() this event
+        return false; // false = causes jquery to preventDefault() and stopPropagation() this event
     }
 
-    function touchDragCallback(e,eventData)
-    {
+    function touchDragCallback(e,eventData) {
         var dragData = eventData;
 
         var imageDynamicRange = dragData.image.maxPixelValue - dragData.image.minPixelValue;
@@ -5098,12 +5100,11 @@ var cornerstoneTools = (function ($, cornerstone, cornerstoneTools) {
         var deltaY = dragData.deltaPoints.page.y * multiplier;
 
         var config = cornerstoneTools.wwwc.getConfiguration();
-        if(config.orientation) {
-            if(config.orientation ===0) {
+        if (config.orientation) {
+            if (config.orientation ===0) {
                 dragData.viewport.voi.windowWidth += (deltaX);
                 dragData.viewport.voi.windowCenter += (deltaY);
-            }
-            else {
+            } else {
                 dragData.viewport.voi.windowWidth += (deltaY);
                 dragData.viewport.voi.windowCenter += (deltaX);
             }
@@ -5117,7 +5118,7 @@ var cornerstoneTools = (function ($, cornerstone, cornerstoneTools) {
 
     cornerstoneTools.wwwc = cornerstoneTools.simpleMouseButtonTool(mouseDownCallback);
     cornerstoneTools.wwwc.strategies = {
-        default : defaultStrategy
+        default : defaultStrategy,
     };
     cornerstoneTools.wwwc.strategy = defaultStrategy;
     cornerstoneTools.wwwcTouchDrag = cornerstoneTools.touchDragTool(touchDragCallback);
@@ -8737,3 +8738,35 @@ var cornerstone = (function (cornerstone) {
     return cornerstone;
 }(cornerstone)); 
 // End Source; src/util/setContextToDisplayFontSize.js
+
+// Begin Source: src/util/throttle.js
+var cornerstoneTools = (function (cornerstoneTools) {
+
+    "use strict";
+
+    if (cornerstoneTools === undefined) {
+        cornerstoneTools = {};
+    }
+
+    function throttle(callback, limit) {
+        // Credit to http://sampsonblog.com/749/simple-throttle-function
+        // Modified to pass event and custom event data to the callback
+        //
+        var wait = false;                            // Initially, we're not waiting
+        return function(e, eventData) {              // We return a throttled function
+            if (!wait) {                             // If we're not waiting
+                callback.call(null, e, eventData);   // Execute users function
+                wait = true;                         // Prevent future invocations
+                setTimeout(function () {             // After a period of time
+                    wait = false;                    // And allow future invocations
+                }, limit);
+            }
+        };
+    }
+
+    // module exports
+    cornerstoneTools.throttle = throttle;
+
+    return cornerstoneTools;
+}(cornerstoneTools)); 
+// End Source; src/util/throttle.js

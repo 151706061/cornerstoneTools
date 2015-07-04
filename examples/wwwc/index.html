@@ -31,8 +31,11 @@
                 <a href="#" id="deactivate" class="list-group-item">Deactivate</a>
                 <a href="#" id="defaultStrategy" class="list-group-item">Default Strategy</a>
                 <a href="#" id="osirixStrategy" class="list-group-item">Osirix Strategy</a>
-
             </ul>
+            <label for="throttleTimeSlider">Time-throttle Strategy
+                <input id="throttleTimeSlider" type="range" min="0" max="200" value="0" step="15" />
+                <p id="throttleTime">Time: 0</p>
+            </label>
         </div>
         <div class="col-xs-6">
             <div style="width:512px;height:512px;position:relative;display:inline-block;color:white;"
@@ -77,6 +80,7 @@ is used by our example image loader-->
 
         eventData.viewport.voi.windowWidth += (deltaX);
         eventData.viewport.voi.windowCenter -= (deltaY);
+        cornerstone.setViewport(eventData.element, eventData.viewport);
     };
 
     var element = $('#dicomImage').get(0);
@@ -124,6 +128,15 @@ is used by our example image loader-->
         $('#defaultStrategy').click(function() {
             activate("#defaultStrategy");
             cornerstoneTools.wwwc.strategy = cornerstoneTools.wwwc.strategies.default;
+            return false;
+        });
+        $('#throttleTimeSlider').change(function() {
+            var time = parseInt($('#throttleTimeSlider').val(), 10);
+            var config = {
+                throttleLimit: time
+            }
+            $("#throttleTime").text("Time: " + time);
+            cornerstoneTools.wwwc.setConfiguration(config);
             return false;
         });
         $('#osirixStrategy').click(function() {
