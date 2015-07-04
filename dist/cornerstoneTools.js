@@ -5061,7 +5061,21 @@ var cornerstoneTools = (function ($, cornerstone, cornerstoneTools) {
             var config = cornerstoneTools.wwwc.getConfiguration();
             if (config.throttleLimit && config.throttleLimit > 0) {
                 var throttleLimit = config.throttleLimit;
-                $(eventData.element).on("CornerstoneToolsMouseDrag", cornerstoneTools.throttle(mouseDragCallback, throttleLimit));
+                var isThrottled = false;
+
+                $(eventData.element).on("CornerstoneToolsMouseDrag", function(e, eventData) {
+                    cornerstoneTools.wwwc.strategy(eventData);
+                    if (isThrottled) {
+                        return;
+                    }
+
+                    isThrottled = true;
+                    setTimeout(function () {
+                        isThrottled = false;
+                    }, throttleLimit);
+                    
+                    cornerstone.setViewport(eventData.element, eventData.viewport);
+                });
             } else {
                 $(eventData.element).on("CornerstoneToolsMouseDrag", mouseDragCallback);
             }
