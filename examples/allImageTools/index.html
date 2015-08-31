@@ -135,6 +135,7 @@ is used by our example image loader-->
     };
 
     cornerstoneTools.zoom.setConfiguration(config);
+    cornerstoneTools.zoom.strategy = cornerstoneTools.zoom.strategies.translate;
 
     $('#chkshadow').on('change', function(){
       cornerstoneTools.length.setConfiguration({shadow: this.checked});
