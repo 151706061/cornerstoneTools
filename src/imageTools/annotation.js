@@ -58,11 +58,11 @@
             if (cornerstoneTools.anyHandlesOutsideImage(mouseEventData, measurementData.handles)) {
                 // delete the measurement
                 cornerstoneTools.removeToolState(mouseEventData.element, toolType, measurementData);
-            }
-
-            var config = cornerstoneTools.arrowAnnotate.getConfiguration();
-            if (measurementData.text === undefined) {
-                config.getTextCallback(doneChangingTextCallback);
+            } else {
+                var config = cornerstoneTools.arrowAnnotate.getConfiguration();
+                if (measurementData.text === undefined) {
+                    config.getTextCallback(doneChangingTextCallback);
+                }
             }
 
             $(mouseEventData.element).on('CornerstoneToolsMouseMove', eventData, cornerstoneTools.arrowAnnotate.mouseMoveCallback);

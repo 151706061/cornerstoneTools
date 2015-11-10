@@ -46,6 +46,10 @@
                 if (cornerstoneTools.anyHandlesOutsideImage(mouseEventData, measurementData.handles)) {
                     // delete the measurement
                     cornerstoneTools.removeToolState(element, mouseToolInterface.toolType, measurementData);
+
+                    if (mouseToolInterface.newMeasurementOutOfBounds) {
+                        mouseToolInterface.newMeasurementOutOfBounds(mouseEventData, measurementData);
+                    }
                 }
 
                 $(element).on('CornerstoneToolsMouseMove', eventData, mouseToolInterface.mouseMoveCallback || mouseMoveCallback);

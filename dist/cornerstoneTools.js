@@ -920,6 +920,10 @@ if (typeof cornerstoneTools === 'undefined') {
                 if (cornerstoneTools.anyHandlesOutsideImage(mouseEventData, measurementData.handles)) {
                     // delete the measurement
                     cornerstoneTools.removeToolState(element, mouseToolInterface.toolType, measurementData);
+
+                    if (mouseToolInterface.newMeasurementOutOfBounds) {
+                        mouseToolInterface.newMeasurementOutOfBounds(mouseEventData, measurementData);
+                    }
                 }
 
                 $(element).on('CornerstoneToolsMouseMove', eventData, mouseToolInterface.mouseMoveCallback || mouseMoveCallback);
@@ -1524,6 +1528,10 @@ if (typeof cornerstoneTools === 'undefined') {
                 if (cornerstoneTools.anyHandlesOutsideImage(touchEventData, measurementData.handles)) {
                     // delete the measurement
                     cornerstoneTools.removeToolState(element, touchToolInterface.toolType, measurementData);
+
+                    if (touchToolInterface.newMeasurementOutOfBounds) {
+                        touchToolInterface.newMeasurementOutOfBounds(touchEventData, measurementData);
+                    }
                 }
 
                 $(element).on('CornerstoneToolsTouchStartActive', touchToolInterface.touchDownActivateCallback || touchDownActivateCallback);
@@ -1951,11 +1959,11 @@ if (typeof cornerstoneTools === 'undefined') {
             if (cornerstoneTools.anyHandlesOutsideImage(mouseEventData, measurementData.handles)) {
                 // delete the measurement
                 cornerstoneTools.removeToolState(mouseEventData.element, toolType, measurementData);
-            }
-
-            var config = cornerstoneTools.arrowAnnotate.getConfiguration();
-            if (measurementData.text === undefined) {
-                config.getTextCallback(doneChangingTextCallback);
+            } else {
+                var config = cornerstoneTools.arrowAnnotate.getConfiguration();
+                if (measurementData.text === undefined) {
+                    config.getTextCallback(doneChangingTextCallback);
+                }
             }
 
             $(mouseEventData.element).on('CornerstoneToolsMouseMove', eventData, cornerstoneTools.arrowAnnotate.mouseMoveCallback);
@@ -4984,6 +4992,10 @@ if (typeof cornerstoneTools === 'undefined') {
 
         // Update the current marker for the next marker
         var currentIndex = config.markers.indexOf(config.current);
+        
+        // Save the current marker as the previous marker
+        config.previous = config.current;
+
         if (config.ascending) {
             currentIndex += 1;
             if (currentIndex >= config.markers.length) {
@@ -5008,6 +5020,13 @@ if (typeof cornerstoneTools === 'undefined') {
 
         return measurementData;
     }
+
+    function newMeasurementOutOfBounds() {
+        // Reverse the previous change to the current text marker value
+        var config = cornerstoneTools.textMarker.getConfiguration();
+        config.current = config.previous;
+    }
+
     ///////// END ACTIVE TOOL ///////
 
     ///////// BEGIN IMAGE RENDERING ///////
@@ -5194,7 +5213,8 @@ if (typeof cornerstoneTools === 'undefined') {
         onImageRendered: onImageRendered,
         pointNearTool: pointNearTool,
         toolType: toolType,
-        mouseDoubleClickCallback: doubleClickCallback
+        mouseDoubleClickCallback: doubleClickCallback,
+        newMeasurementOutOfBounds: newMeasurementOutOfBounds
     });
 
     cornerstoneTools.textMarkerTouch = cornerstoneTools.touchTool({
@@ -5203,7 +5223,8 @@ if (typeof cornerstoneTools === 'undefined') {
         pointNearTool: pointNearTool,
         toolType: toolType,
         pressCallback: touchPressCallback,
-        doubleTapCallback: touchPressCallback
+        doubleTapCallback: touchPressCallback,
+        newMeasurementOutOfBounds: newMeasurementOutOfBounds
     });
 
     ///////// END IMAGE RENDERING ///////

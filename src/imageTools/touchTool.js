@@ -29,6 +29,10 @@
                 if (cornerstoneTools.anyHandlesOutsideImage(touchEventData, measurementData.handles)) {
                     // delete the measurement
                     cornerstoneTools.removeToolState(element, touchToolInterface.toolType, measurementData);
+
+                    if (touchToolInterface.newMeasurementOutOfBounds) {
+                        touchToolInterface.newMeasurementOutOfBounds(touchEventData, measurementData);
+                    }
                 }
 
                 $(element).on('CornerstoneToolsTouchStartActive', touchToolInterface.touchDownActivateCallback || touchDownActivateCallback);

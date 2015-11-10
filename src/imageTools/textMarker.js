@@ -29,6 +29,10 @@
 
         // Update the current marker for the next marker
         var currentIndex = config.markers.indexOf(config.current);
+        
+        // Save the current marker as the previous marker
+        config.previous = config.current;
+
         if (config.ascending) {
             currentIndex += 1;
             if (currentIndex >= config.markers.length) {
@@ -53,6 +57,13 @@
 
         return measurementData;
     }
+
+    function newMeasurementOutOfBounds() {
+        // Reverse the previous change to the current text marker value
+        var config = cornerstoneTools.textMarker.getConfiguration();
+        config.current = config.previous;
+    }
+
     ///////// END ACTIVE TOOL ///////
 
     ///////// BEGIN IMAGE RENDERING ///////
@@ -239,7 +250,8 @@
         onImageRendered: onImageRendered,
         pointNearTool: pointNearTool,
         toolType: toolType,
-        mouseDoubleClickCallback: doubleClickCallback
+        mouseDoubleClickCallback: doubleClickCallback,
+        newMeasurementOutOfBounds: newMeasurementOutOfBounds
     });
 
     cornerstoneTools.textMarkerTouch = cornerstoneTools.touchTool({
@@ -248,7 +260,8 @@
         pointNearTool: pointNearTool,
         toolType: toolType,
         pressCallback: touchPressCallback,
-        doubleTapCallback: touchPressCallback
+        doubleTapCallback: touchPressCallback,
+        newMeasurementOutOfBounds: newMeasurementOutOfBounds
     });
 
     ///////// END IMAGE RENDERING ///////
