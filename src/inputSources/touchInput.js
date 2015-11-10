@@ -12,6 +12,7 @@
         deltaPoints,
         eventData,
         touchStartDelay,
+        touchEndDelay,
         pressDelay = 700,
         pressTimeout,
         isPress = false,
@@ -20,7 +21,7 @@
         preventNextPinch = false;
     
     function onTouch(e) {
-        ///console.log(e.type);
+        console.log(e.type);
         var element = e.target.parentNode,
             event,
             eventType;
@@ -236,31 +237,38 @@
                 isPress = false;
                 clearTimeout(pressTimeout);
 
-                startPoints = {
-                    page: cornerstoneMath.point.pageToPoint(e.originalEvent.changedTouches[0]),
-                    image: cornerstone.pageToPixel(element, e.originalEvent.changedTouches[0].pageX, e.originalEvent.changedTouches[0].pageY),
-                    client: {
-                        x: e.originalEvent.changedTouches[0].clientX,
-                        y: e.originalEvent.changedTouches[0].clientY
-                    }
-                };
-                startPoints.canvas = cornerstone.pixelToCanvas(element, startPoints.image);
+                // We have to put touchend on a delay now since touchstart is already on one
+                // Otherwise we end up with weird behaviour during tool placement (i.e. movement
+                // end handlers not firing because CornerstoneToolsTouchEnd fired 'before' CornerstoneToolsTouchStart)
+                clearTimeout(touchEndDelay);
+                touchEndDelay = setTimeout(function() {
+                    startPoints = {
+                        page: cornerstoneMath.point.pageToPoint(e.originalEvent.changedTouches[0]),
+                        image: cornerstone.pageToPixel(element, e.originalEvent.changedTouches[0].pageX, e.originalEvent.changedTouches[0].pageY),
+                        client: {
+                            x: e.originalEvent.changedTouches[0].clientX,
+                            y: e.originalEvent.changedTouches[0].clientY
+                        }
+                    };
+                    startPoints.canvas = cornerstone.pixelToCanvas(element, startPoints.image);
 
-                eventType = 'CornerstoneToolsTouchEnd';
+                    eventType = 'CornerstoneToolsTouchEnd';
 
-                eventData = {
-                    event: e,
-                    viewport: cornerstone.getViewport(element),
-                    image: cornerstone.getEnabledElement(element).image,
-                    element: element,
-                    startPoints: startPoints,
-                    currentPoints: startPoints,
-                    type: eventType,
-                    isTouchEvent: true
-                };
+                    eventData = {
+                        event: e,
+                        viewport: cornerstone.getViewport(element),
+                        image: cornerstone.getEnabledElement(element).image,
+                        element: element,
+                        startPoints: startPoints,
+                        currentPoints: startPoints,
+                        type: eventType,
+                        isTouchEvent: true
+                    };
 
-                event = $.Event(eventType, eventData);
-                $(element).trigger(event, eventData);
+                    event = $.Event(eventType, eventData);
+                    $(element).trigger(event, eventData);
+                }, 50);
+
                 break;
 
             case 'panmove':
@@ -410,16 +418,20 @@
         disable(element);
 
         var hammerOptions = {
-            inputClass: Hammer.SUPPORT_POINTER_EVENTS ? Hammer.PointerEventInput : Hammer.TouchInput
+            inputClass: Hammer.SUPPORT_POINTER_EVENTS ? Hammer.PointerEventInput : Hammer.TouchInput,
+            recognizers: []
         };
 
-        var mc = new Hammer.Manager(element, hammerOptions);
+        var mc = new Hammer(element, hammerOptions);
 
         var panOptions = {
             pointers: 0,
             direction: Hammer.DIRECTION_ALL,
             threshold: 0
         };
+
+        var tap = new Hammer.Tap();
+        var doubletap = new Hammer.Tap({ event: 'doubletap', taps: 2 });
 
         var pan = new Hammer.Pan(panOptions);
         var pinch = new Hammer.Pinch({
@@ -428,14 +440,16 @@
         var rotate = new Hammer.Rotate({
             threshold: 0
         });
-        
+
         // we want to detect both the same time
         pinch.recognizeWith(pan);
         pinch.recognizeWith(rotate);
 
+        doubletap.recognizeWith([tap, pan]);
+
         // add to the Manager
-        mc.add([ pan, rotate, pinch ]);
-        mc.on('tap doubletap panstart panmove panend pinchstart pinchmove rotatemove', onTouch);
+        mc.add([ doubletap, tap, pan, rotate, pinch ]);
+        mc.on('doubletap tap panstart panmove panend pinchstart pinchmove rotatemove', onTouch);
 
         cornerstoneTools.preventGhostClick.enable(element);
         $(element).on('touchstart touchend', onTouch);

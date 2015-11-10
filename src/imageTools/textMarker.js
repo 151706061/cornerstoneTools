@@ -202,10 +202,6 @@
             $(element).on('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
         }
 
-        if (e.data && e.data.mouseButtonMask && !cornerstoneTools.isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
-            return false;
-        }
-
         var config = cornerstoneTools.textMarker.getConfiguration();
 
         var coords = eventData.currentPoints.canvas;
@@ -251,7 +247,8 @@
         onImageRendered: onImageRendered,
         pointNearTool: pointNearTool,
         toolType: toolType,
-        pressCallback: touchPressCallback
+        pressCallback: touchPressCallback,
+        doubleTapCallback: touchPressCallback
     });
 
     ///////// END IMAGE RENDERING ///////
