@@ -6483,9 +6483,11 @@ if (typeof cornerstoneTools === 'undefined') {
             }
         }
 
+        $(element).on('CornerstoneToolsTouchStart', touchDragCallback);
         $(element).on('CornerstoneToolsTouchDrag', touchDragCallback);
 
         function touchEndCallback(e, eventData) {
+            $(element).off('CornerstoneToolsTouchStart', touchDragCallback);
             $(element).off('CornerstoneToolsTouchDrag', touchDragCallback);
 
             $(element).off('CornerstoneToolsTouchPinch', touchEndCallback);
