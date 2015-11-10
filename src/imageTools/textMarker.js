@@ -166,7 +166,7 @@
                 $(element).off('CornerstoneToolsMouseDownActivate', cornerstoneTools.textMarker.mouseDownActivateCallback);
                 $(element).off('CornerstoneToolsMouseDoubleClick', cornerstoneTools.textMarker.mouseDoubleClickCallback);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -224,7 +224,7 @@
                 $(element).off('CornerstoneToolsTap', cornerstoneTools.textMarkerTouch.tapCallback);
                 $(element).off('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;

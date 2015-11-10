@@ -52,6 +52,7 @@
                     handle.y = Math.min(handle.y, eventData.image.height);
                 }
             }
+
             cornerstone.updateImage(element);
 
             if (typeof doneMovingCallback === 'function') {

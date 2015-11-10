@@ -10,7 +10,7 @@
         doneChangingTextCallback(prompt('Enter your annotation:'));
     }
 
-    function changeTextCallback(data, doneChangingTextCallback) {
+    function changeTextCallback(data, eventData, doneChangingTextCallback) {
         doneChangingTextCallback(prompt('Change your annotation:'));
     }
 
@@ -336,7 +336,7 @@
                 data.active = true;
                 cornerstone.updateImage(element);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -385,7 +385,7 @@
                 // Allow relabelling via a callback
                 $(element).off('CornerstoneToolsTouchStart', cornerstoneTools.arrowAnnotateTouch.touchStartCallback);
                 $(element).off('CornerstoneToolsTouchStartActive', cornerstoneTools.arrowAnnotateTouch.touchDownActivateCallback);
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;

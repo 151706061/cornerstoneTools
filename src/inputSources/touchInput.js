@@ -431,7 +431,10 @@
         };
 
         var tap = new Hammer.Tap();
-        var doubletap = new Hammer.Tap({ event: 'doubletap', taps: 2 });
+        var doubletap = new Hammer.Tap({
+            event: 'doubletap',
+            taps: 2
+        });
 
         var pan = new Hammer.Pan(panOptions);
         var pinch = new Hammer.Pinch({
@@ -445,7 +448,7 @@
         pinch.recognizeWith(pan);
         pinch.recognizeWith(rotate);
 
-        doubletap.recognizeWith([tap, pan]);
+        doubletap.recognizeWith([ tap, pan ]);
 
         // add to the Manager
         mc.add([ doubletap, tap, pan, rotate, pinch ]);

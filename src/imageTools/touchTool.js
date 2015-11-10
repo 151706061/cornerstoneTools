@@ -36,6 +36,7 @@
                 if (touchToolInterface.pressCallback) {
                     $(element).on('CornerstoneToolsTouchPress', touchToolInterface.pressCallback);
                 }
+
                 cornerstone.updateImage(element);
             });
         }

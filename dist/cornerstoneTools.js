@@ -788,7 +788,10 @@ if (typeof cornerstoneTools === 'undefined') {
         };
 
         var tap = new Hammer.Tap();
-        var doubletap = new Hammer.Tap({ event: 'doubletap', taps: 2 });
+        var doubletap = new Hammer.Tap({
+            event: 'doubletap',
+            taps: 2
+        });
 
         var pan = new Hammer.Pan(panOptions);
         var pinch = new Hammer.Pinch({
@@ -802,7 +805,7 @@ if (typeof cornerstoneTools === 'undefined') {
         pinch.recognizeWith(pan);
         pinch.recognizeWith(rotate);
 
-        doubletap.recognizeWith([tap, pan]);
+        doubletap.recognizeWith([ tap, pan ]);
 
         // add to the Manager
         mc.add([ doubletap, tap, pan, rotate, pinch ]);
@@ -1528,6 +1531,7 @@ if (typeof cornerstoneTools === 'undefined') {
                 if (touchToolInterface.pressCallback) {
                     $(element).on('CornerstoneToolsTouchPress', touchToolInterface.pressCallback);
                 }
+
                 cornerstone.updateImage(element);
             });
         }
@@ -1899,7 +1903,7 @@ if (typeof cornerstoneTools === 'undefined') {
         doneChangingTextCallback(prompt('Enter your annotation:'));
     }
 
-    function changeTextCallback(data, doneChangingTextCallback) {
+    function changeTextCallback(data, eventData, doneChangingTextCallback) {
         doneChangingTextCallback(prompt('Change your annotation:'));
     }
 
@@ -2225,7 +2229,7 @@ if (typeof cornerstoneTools === 'undefined') {
                 data.active = true;
                 cornerstone.updateImage(element);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -2274,7 +2278,7 @@ if (typeof cornerstoneTools === 'undefined') {
                 // Allow relabelling via a callback
                 $(element).off('CornerstoneToolsTouchStart', cornerstoneTools.arrowAnnotateTouch.touchStartCallback);
                 $(element).off('CornerstoneToolsTouchStartActive', cornerstoneTools.arrowAnnotateTouch.touchDownActivateCallback);
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -5117,7 +5121,7 @@ if (typeof cornerstoneTools === 'undefined') {
                 $(element).off('CornerstoneToolsMouseDownActivate', cornerstoneTools.textMarker.mouseDownActivateCallback);
                 $(element).off('CornerstoneToolsMouseDoubleClick', cornerstoneTools.textMarker.mouseDoubleClickCallback);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -5175,7 +5179,7 @@ if (typeof cornerstoneTools === 'undefined') {
                 $(element).off('CornerstoneToolsTap', cornerstoneTools.textMarkerTouch.tapCallback);
                 $(element).off('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -6504,6 +6508,7 @@ if (typeof cornerstoneTools === 'undefined') {
                     handle.y = Math.min(handle.y, eventData.image.height);
                 }
             }
+
             cornerstone.updateImage(element);
 
             if (typeof doneMovingCallback === 'function') {
