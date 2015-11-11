@@ -184,12 +184,10 @@
 
             if (touchToolInterface.doubleTapCallback) {
                 $(element).off('CornerstoneToolsDoubleTap', touchToolInterface.doubleTapCallback);
-                $(element).on('CornerstoneToolsDoubleTap', touchToolInterface.doubleTapCallback);
             }
 
             if (touchToolInterface.pressCallback) {
                 $(element).off('CornerstoneToolsTouchPress', touchToolInterface.pressCallback);
-                $(element).on('CornerstoneToolsTouchPress', touchToolInterface.pressCallback);
             }
 
             cornerstone.updateImage(element);

@@ -31,11 +31,15 @@
             }
         }
 
-        $(element).on('CornerstoneToolsTouchStart', touchDragCallback);
+        function touchStartCallback() {
+            cornerstone.updateImage(element);
+        }
+
+        $(element).on('CornerstoneToolsTouchStart', touchStartCallback);
         $(element).on('CornerstoneToolsTouchDrag', touchDragCallback);
 
         function touchEndCallback(e, eventData) {
-            $(element).off('CornerstoneToolsTouchStart', touchDragCallback);
+            $(element).off('CornerstoneToolsTouchStart', touchStartCallback);
             $(element).off('CornerstoneToolsTouchDrag', touchDragCallback);
 
             $(element).off('CornerstoneToolsTouchPinch', touchEndCallback);

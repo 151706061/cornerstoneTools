@@ -178,9 +178,6 @@
                     $(element).trigger(event, eventData);
 
                     if (event.isImmediatePropagationStopped() === false) {
-                        //isPress = false;
-                        //clearTimeout(pressTimeout);
-
                         // No current tools responded to the drag action.
                         // Create new tool measurement
                         eventType = 'CornerstoneToolsTouchStartActive';

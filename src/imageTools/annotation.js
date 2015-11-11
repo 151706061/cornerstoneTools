@@ -285,19 +285,21 @@
         cornerstone.updateImage(element);
 
         cornerstoneTools.touchMoveHandle(touchEventData, measurementData.handles.end, function() {
-            cornerstone.updateImage(element);
-
+            measurementData.active = false;
+            measurementData.invalidated = true;
+            
             if (cornerstoneTools.anyHandlesOutsideImage(touchEventData, measurementData.handles)) {
                 // delete the measurement
                 cornerstoneTools.removeToolState(element, toolType, measurementData);
-            }
-
-            var config = cornerstoneTools.arrowAnnotate.getConfiguration();
-            if (measurementData.text === undefined) {
-                config.getTextCallback(doneChangingTextCallback);
+            } else {
+                var config = cornerstoneTools.arrowAnnotate.getConfiguration();
+                if (measurementData.text === undefined) {
+                    config.getTextCallback(doneChangingTextCallback);
+                }
             }
 
             $(element).on('CornerstoneToolsTouchStartActive', cornerstoneTools.arrowAnnotateTouch.touchDownActivateCallback);
+            cornerstone.updateImage(element);
         });
     }
 
