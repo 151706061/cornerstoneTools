@@ -20,7 +20,7 @@
         preventNextPinch = false;
     
     function onTouch(e) {
-        ///console.log(e.type);
+        console.log(e.type);
         var element = e.target.parentNode,
             event,
             eventType;
@@ -236,31 +236,33 @@
                 isPress = false;
                 clearTimeout(pressTimeout);
 
-                startPoints = {
-                    page: cornerstoneMath.point.pageToPoint(e.originalEvent.changedTouches[0]),
-                    image: cornerstone.pageToPixel(element, e.originalEvent.changedTouches[0].pageX, e.originalEvent.changedTouches[0].pageY),
-                    client: {
-                        x: e.originalEvent.changedTouches[0].clientX,
-                        y: e.originalEvent.changedTouches[0].clientY
-                    }
-                };
-                startPoints.canvas = cornerstone.pixelToCanvas(element, startPoints.image);
+                setTimeout(function() {
+                    startPoints = {
+                        page: cornerstoneMath.point.pageToPoint(e.originalEvent.changedTouches[0]),
+                        image: cornerstone.pageToPixel(element, e.originalEvent.changedTouches[0].pageX, e.originalEvent.changedTouches[0].pageY),
+                        client: {
+                            x: e.originalEvent.changedTouches[0].clientX,
+                            y: e.originalEvent.changedTouches[0].clientY
+                        }
+                    };
+                    startPoints.canvas = cornerstone.pixelToCanvas(element, startPoints.image);
 
-                eventType = 'CornerstoneToolsTouchEnd';
+                    eventType = 'CornerstoneToolsTouchEnd';
 
-                eventData = {
-                    event: e,
-                    viewport: cornerstone.getViewport(element),
-                    image: cornerstone.getEnabledElement(element).image,
-                    element: element,
-                    startPoints: startPoints,
-                    currentPoints: startPoints,
-                    type: eventType,
-                    isTouchEvent: true
-                };
+                    eventData = {
+                        event: e,
+                        viewport: cornerstone.getViewport(element),
+                        image: cornerstone.getEnabledElement(element).image,
+                        element: element,
+                        startPoints: startPoints,
+                        currentPoints: startPoints,
+                        type: eventType,
+                        isTouchEvent: true
+                    };
 
-                event = $.Event(eventType, eventData);
-                $(element).trigger(event, eventData);
+                    event = $.Event(eventType, eventData);
+                    $(element).trigger(event, eventData);
+                }, 50);
                 break;
 
             case 'panmove':
@@ -433,8 +435,18 @@
         pinch.recognizeWith(pan);
         pinch.recognizeWith(rotate);
 
+        var doubleTap = new Hammer.Tap({
+            event: 'doubletap',
+            taps: 2,
+            interval: 1500,
+            threshold: 50,
+            posThreshold: 50
+        });
+
+        doubleTap.recognizeWith(pan);
+
         // add to the Manager
-        mc.add([ pan, rotate, pinch ]);
+        mc.add([ doubleTap, pan, rotate, pinch ]);
         mc.on('tap doubletap panstart panmove panend pinchstart pinchmove rotatemove', onTouch);
 
         cornerstoneTools.preventGhostClick.enable(element);

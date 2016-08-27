@@ -27,6 +27,20 @@
             }
         };
 
+        // Create a rectangle representing the image
+        var imageRect = {
+            left: 0,
+            top: 0,
+            width: mouseEventData.image.width,
+            height: mouseEventData.image.height
+        };
+
+        // Check if the current handle is outside the image,
+        // If it is, prevent the handle creation
+        if (!cornerstoneMath.point.insideRect(measurementData.handles.end, imageRect)) {
+            return;
+        }
+
         // Update the current marker for the next marker
         var currentIndex = config.markers.indexOf(config.current);
         if (config.ascending) {
@@ -57,16 +71,11 @@
 
     ///////// BEGIN IMAGE RENDERING ///////
     function pointNearTool(element, data, coords) {
-        var endCanvas = cornerstone.pixelToCanvas(element, data.handles.end);
+        if (!data.textBoundingBox) {
+            return;
+        }
 
-        var rect = {
-            left: endCanvas.x - data.textWidth / 2,
-            top: endCanvas.y,
-            width: data.textWidth,
-            height: data.textHeight
-        };
-
-        var distanceToPoint = cornerstoneMath.rect.distanceToPoint(rect, coords);
+        var distanceToPoint = cornerstoneMath.rect.distanceToPoint(data.textBoundingBox, coords);
         return (distanceToPoint < 10);
     }
 
@@ -81,8 +90,6 @@
         var context = eventData.canvasContext.canvas.getContext('2d');
         context.setTransform(1, 0, 0, 1, 0, 0);
 
-        var font = cornerstoneTools.textStyle.getFont();
-        var fontSize = cornerstoneTools.textStyle.getFontSize();
         var config = cornerstoneTools.textMarker.getConfiguration();
 
         for (var i = 0; i < toolData.data.length; i++) {
@@ -102,21 +109,21 @@
             }
 
             // Draw text
-            context.font = font;
             context.fillStyle = color;
-
             var measureText = context.measureText(data.text);
-            data.textWidth = measureText.width;
-            data.textHeight = fontSize;
+            data.textWidth = measureText.width + 10;
 
-            var coords = {
-                x: data.handles.end.x,
-                y: data.handles.end.y
+            var textCoords = cornerstone.pixelToCanvas(eventData.element, data.handles.end);
+
+            var options = {
+                centering: {
+                    x: true,
+                    y: true
+                }
             };
 
-            var textCoords = cornerstone.pixelToCanvas(eventData.element, coords);
-
-            cornerstoneTools.drawTextBox(context, data.text, textCoords.x - data.textWidth / 2, textCoords.y, color);
+            var boundingBox = cornerstoneTools.drawTextBox(context, data.text, textCoords.x, textCoords.y - 10, color, options);
+            data.textBoundingBox = boundingBox;
 
             context.restore();
         }
@@ -135,10 +142,15 @@
 
             data.active = false;
             cornerstone.updateImage(element);
-            $(element).on('CornerstoneToolsMouseMove', eventData, cornerstoneTools.textMarker.mouseMoveCallback);
-            $(element).on('CornerstoneToolsMouseDown', eventData, cornerstoneTools.textMarker.mouseDownCallback);
-            $(element).on('CornerstoneToolsMouseDownActivate', eventData, cornerstoneTools.textMarker.mouseDownActivateCallback);
-            $(element).on('CornerstoneToolsMouseDoubleClick', eventData, cornerstoneTools.textMarker.mouseDoubleClickCallback);
+
+            var mouseButtonData = {
+                mouseButtonMask: e.data.mouseButtonMask
+            };
+
+            $(element).on('CornerstoneToolsMouseMove', mouseButtonData, cornerstoneTools.textMarker.mouseMoveCallback);
+            $(element).on('CornerstoneToolsMouseDown', mouseButtonData, cornerstoneTools.textMarker.mouseDownCallback);
+            $(element).on('CornerstoneToolsMouseDownActivate', mouseButtonData, cornerstoneTools.textMarker.mouseDownActivateCallback);
+            $(element).on('CornerstoneToolsMouseDoubleClick', mouseButtonData, cornerstoneTools.textMarker.mouseDoubleClickCallback);
         }
 
         if (e.data && e.data.mouseButtonMask && !cornerstoneTools.isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
@@ -166,7 +178,7 @@
                 $(element).off('CornerstoneToolsMouseDownActivate', cornerstoneTools.textMarker.mouseDownActivateCallback);
                 $(element).off('CornerstoneToolsMouseDoubleClick', cornerstoneTools.textMarker.mouseDoubleClickCallback);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
@@ -189,21 +201,12 @@
 
             data.active = false;
             cornerstone.updateImage(element);
-            $(element).off('CornerstoneToolsTouchDrag', cornerstoneTools.textMarkerTouch.touchMoveCallback);
-            $(element).off('CornerstoneToolsTouchStartActive', cornerstoneTools.textMarkerTouch.touchDownActivateCallback);
-            $(element).off('CornerstoneToolsTouchStart', cornerstoneTools.textMarkerTouch.touchStartCallback);
-            $(element).off('CornerstoneToolsTap', cornerstoneTools.textMarkerTouch.tapCallback);
-            $(element).off('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
 
             $(element).on('CornerstoneToolsTouchDrag', cornerstoneTools.textMarkerTouch.touchMoveCallback);
             $(element).on('CornerstoneToolsTouchStartActive', cornerstoneTools.textMarkerTouch.touchDownActivateCallback);
             $(element).on('CornerstoneToolsTouchStart', cornerstoneTools.textMarkerTouch.touchStartCallback);
             $(element).on('CornerstoneToolsTap', cornerstoneTools.textMarkerTouch.tapCallback);
             $(element).on('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
-        }
-
-        if (e.data && e.data.mouseButtonMask && !cornerstoneTools.isMouseButtonEnabled(eventData.which, e.data.mouseButtonMask)) {
-            return false;
         }
 
         var config = cornerstoneTools.textMarker.getConfiguration();
@@ -213,6 +216,23 @@
 
         // now check to see if there is a handle we can move
         if (!toolData) {
+            return false;
+        }
+
+        if (eventData.handlePressed) {
+            eventData.handlePressed.active = true;
+            cornerstone.updateImage(element);
+
+            $(element).off('CornerstoneToolsTouchDrag', cornerstoneTools.textMarkerTouch.touchMoveCallback);
+            $(element).off('CornerstoneToolsTouchStartActive', cornerstoneTools.textMarkerTouch.touchDownActivateCallback);
+            $(element).off('CornerstoneToolsTouchStart', cornerstoneTools.textMarkerTouch.touchStartCallback);
+            $(element).off('CornerstoneToolsTap', cornerstoneTools.textMarkerTouch.tapCallback);
+            $(element).off('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
+            
+            // Allow relabelling via a callback
+            config.changeTextCallback(eventData.handlePressed, eventData, doneChangingTextCallback);
+            
+            e.stopImmediatePropagation();
             return false;
         }
 
@@ -228,7 +248,7 @@
                 $(element).off('CornerstoneToolsTap', cornerstoneTools.textMarkerTouch.tapCallback);
                 $(element).off('CornerstoneToolsTouchPress', cornerstoneTools.textMarkerTouch.pressCallback);
                 // Allow relabelling via a callback
-                config.changeTextCallback(data, doneChangingTextCallback);
+                config.changeTextCallback(data, eventData, doneChangingTextCallback);
                 
                 e.stopImmediatePropagation();
                 return false;
